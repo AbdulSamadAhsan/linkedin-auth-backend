@@ -14,6 +14,7 @@ const publicUser = user => ({ id: user._id.toString(), email: user.email, create
 export async function createApp({
   mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/linkedin_auth',
   origins = (process.env.FRONTEND_ORIGINS || 'http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173').split(',').map(x => x.trim()),
+  allowAllOrigins = process.env.ALLOW_ALL_ORIGINS === 'true',
   secureCookies = process.env.NODE_ENV === 'production',
   authLimit = 20,
 } = {}) {
@@ -26,12 +27,20 @@ export async function createApp({
   app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
     // Reject disallowed browser origins, including mutations that do not preflight.
-    if (req.headers.origin && !origins.includes(req.headers.origin)) {
+    if (!allowAllOrigins && req.headers.origin && !origins.includes(req.headers.origin)) {
       return res.status(403).json({ message: 'This origin is not allowed.' });
     }
     next();
   });
-  app.use(cors({ origin: origins, credentials: true, methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'] }));
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (allowAllOrigins || !origin || origins.includes(origin)) return callback(null, origin || true);
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+  }));
   app.use(express.json({ limit: '10kb' }));
   app.use(cookieParser());
   app.use('/api', (req, res, next) => {

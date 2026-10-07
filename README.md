@@ -52,7 +52,7 @@ Registration returns 201. Other successful auth requests return 200. Errors have
 
 ## Configuration
 
-`.env.example` documents PORT, HOST, NODE_ENV, MONGODB_URI, and FRONTEND_ORIGINS. HOST defaults to 127.0.0.1 for local access. Update the frontend vite.config.js proxy if changing PORT.
+`.env.example` documents PORT, HOST, NODE_ENV, MONGODB_URI, FRONTEND_ORIGINS, and ALLOW_ALL_ORIGINS. Set ALLOW_ALL_ORIGINS=true only when the API must accept browser requests from any origin; the server echoes each requesting origin so credentialed cookies continue to work. HOST defaults to 127.0.0.1 for local access. Update the frontend vite.config.js proxy if changing PORT.
 
 For deployment use HTTPS, NODE_ENV=production, a protected MongoDB account, and a same-origin /api reverse proxy. The Vite development proxy is not included in static production builds. Configure trusted proxies explicitly for your environment and a shared limiter if running multiple instances.
 
